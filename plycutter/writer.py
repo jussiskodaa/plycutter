@@ -27,7 +27,7 @@ from .geometry.aabb import AABB
 logger = logging.getLogger(__name__)
 
 
-def write_svg(filename, geom2ds, sheetplex, sheetbuild, text_height_svg=50):
+def write_svg(filename, geom2ds, sheetplex, sheetbuild, text_height_svg=50, generate_markers: bool = False):
     file = open(filename, "w")
     file.write('<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
     file.write('<svg version = "1.1" xmlns="http://www.w3.org/2000/svg">\n')
@@ -79,51 +79,52 @@ def write_svg(filename, geom2ds, sheetplex, sheetbuild, text_height_svg=50):
             for hole in polygon.spwhs[0].holes:
                 draw_coords(hole)
 
-        # Add joint markers for SVG
-        if sheetplex and sheetbuild:
-            for interside in sheetplex.intersides(sheet_id):
-                if interside.joint_marker_text and \
-                   interside.id in sheetbuild.interside_chosen and \
-                   not sheetbuild.interside_chosen[interside.id].is_empty():
+        if generate_markers:
+            # Add joint markers for SVG
+            if sheetplex and sheetbuild:
+                for interside in sheetplex.intersides(sheet_id):
+                    if interside.joint_marker_text and \
+                       interside.id in sheetbuild.interside_chosen and \
+                       not sheetbuild.interside_chosen[interside.id].is_empty():
 
-                    chosen_joint_geom_1d = sheetbuild.interside_chosen[interside.id]
+                        chosen_joint_geom_1d = sheetbuild.interside_chosen[interside.id]
 
-                    if not chosen_joint_geom_1d.intervals: # Check if intervals list is empty
-                        continue
-                    min_val = chosen_joint_geom_1d.intervals[0][0]
-                    max_val = chosen_joint_geom_1d.intervals[-1][1]
-                    mid_1d = (float(min_val) + float(max_val)) / 2.0
+                        if not chosen_joint_geom_1d.intervals: # Check if intervals list is empty
+                            continue
+                        min_val = chosen_joint_geom_1d.intervals[0][0]
+                        max_val = chosen_joint_geom_1d.intervals[-1][1]
+                        mid_1d = (float(min_val) + float(max_val)) / 2.0
 
-                    direction_f = np.array(interside.direction, dtype=float)
-                    origin_offset_f = float(interside.origin_offset)
-                    normal_f = np.array(interside.normal, dtype=float)
+                        direction_f = np.array(interside.direction, dtype=float)
+                        origin_offset_f = float(interside.origin_offset)
+                        normal_f = np.array(interside.normal, dtype=float)
 
-                    # Position calculation in sheet coordinates
-                    text_pos_2d_sheet = (mid_1d + origin_offset_f) * direction_f
-                    # Offset along normal - using a fixed offset of 1.0 sheet units
-                    text_pos_2d_sheet -= normal_f * 1.0 # Changed to subtract
+                        # Position calculation in sheet coordinates
+                        text_pos_2d_sheet = (mid_1d + origin_offset_f) * direction_f
+                        # Offset along normal - using a fixed offset of 1.0 sheet units
+                        text_pos_2d_sheet -= normal_f * 1.0 # Changed to subtract
 
-                    # Apply global SVG offsets
-                    text_x_svg = float(text_pos_2d_sheet[0]) + x_offset
-                    text_y_svg = float(text_pos_2d_sheet[1]) + y_offset # Consistent with how draw_coords handles y_offset
+                        # Apply global SVG offsets
+                        text_x_svg = float(text_pos_2d_sheet[0]) + x_offset
+                        text_y_svg = float(text_pos_2d_sheet[1]) + y_offset # Consistent with how draw_coords handles y_offset
 
-                    rotation_angle_rad = np.arctan2(direction_f[1], direction_f[0])
-                    rotation_angle_deg = np.degrees(rotation_angle_rad)
+                        rotation_angle_rad = np.arctan2(direction_f[1], direction_f[0])
+                        rotation_angle_deg = np.degrees(rotation_angle_rad)
 
-                    svg_text = (
-                        f'<text x="{text_x_svg:.3f}" y="{text_y_svg:.3f}" '
-                        f'font-family="sans-serif" font-size="{text_height_svg}px" fill="black" '
-                        f'transform="rotate({rotation_angle_deg:.2f}, {text_x_svg:.3f}, {text_y_svg:.3f})" '
-                        f'text-anchor="middle" dominant-baseline="middle">'
-                        f'{interside.joint_marker_text}</text>\n'
-                    )
-                    file.write(svg_text)
+                        svg_text = (
+                            f'<text x="{text_x_svg:.3f}" y="{text_y_svg:.3f}" '
+                            f'font-family="sans-serif" font-size="{text_height_svg}px" fill="black" '
+                            f'transform="rotate({rotation_angle_deg:.2f}, {text_x_svg:.3f}, {text_y_svg:.3f})" '
+                            f'text-anchor="middle" dominant-baseline="middle">'
+                            f'{interside.joint_marker_text}</text>\n'
+                        )
+                        file.write(svg_text)
 
     file.write("</svg>")
     file.close()
 
 
-def write_dxf(filename, geom2ds, sheetplex, sheetbuild, text_height=5.0):
+def write_dxf(filename, geom2ds, sheetplex, sheetbuild, text_height=5.0, generate_markers: bool = False):
     dwg = ezdxf.new("AC1015")
     modelspace = dwg.modelspace()
 
@@ -164,55 +165,56 @@ def write_dxf(filename, geom2ds, sheetplex, sheetbuild, text_height=5.0):
             for hole in polygon.spwhs[0].holes:
                 draw_coords(hole)
 
-        # Add joint markers
-        if sheetplex and sheetbuild:
-            # current_sheet = sheetplex.sheets[sheet_id] # Not strictly needed
-            for interside in sheetplex.intersides(sheet_id):
-                if interside.joint_marker_text and \
-                   interside.id in sheetbuild.interside_chosen and \
-                   not sheetbuild.interside_chosen[interside.id].is_empty():
+        if generate_markers:
+            # Add joint markers
+            if sheetplex and sheetbuild:
+                # current_sheet = sheetplex.sheets[sheet_id] # Not strictly needed
+                for interside in sheetplex.intersides(sheet_id):
+                    if interside.joint_marker_text and \
+                       interside.id in sheetbuild.interside_chosen and \
+                       not sheetbuild.interside_chosen[interside.id].is_empty():
 
-                    chosen_joint_geom_1d = sheetbuild.interside_chosen[interside.id]
+                        chosen_joint_geom_1d = sheetbuild.interside_chosen[interside.id]
 
-                    # Calculate text position and rotation
-                    # Joint runs along interside.direction. Text parallel to this.
-                    rotation_rad = np.arctan2(float(interside.direction[1]), float(interside.direction[0]))
-                    rotation_deg = np.degrees(rotation_rad)
+                        # Calculate text position and rotation
+                        # Joint runs along interside.direction. Text parallel to this.
+                        rotation_rad = np.arctan2(float(interside.direction[1]), float(interside.direction[0]))
+                        rotation_deg = np.degrees(rotation_rad)
 
-                    # Midpoint of the 1D joint geometry
-                    if not chosen_joint_geom_1d.intervals: # Check if intervals list is empty
-                        continue
-                    min_val = chosen_joint_geom_1d.intervals[0][0]
-                    max_val = chosen_joint_geom_1d.intervals[-1][1]
-                    mid_1d = (float(min_val) + float(max_val)) / 2.0
+                        # Midpoint of the 1D joint geometry
+                        if not chosen_joint_geom_1d.intervals: # Check if intervals list is empty
+                            continue
+                        min_val = chosen_joint_geom_1d.intervals[0][0]
+                        max_val = chosen_joint_geom_1d.intervals[-1][1]
+                        mid_1d = (float(min_val) + float(max_val)) / 2.0
 
-                    # Convert 1D midpoint to 2D sheet coordinates
-                    # interside.direction is already a numpy array of Fraction
-                    # interside.origin_offset is a Fraction
-                    # Ensure calculations are float for vector math
-                    direction_f = np.array(interside.direction, dtype=float)
-                    origin_offset_f = float(interside.origin_offset)
+                        # Convert 1D midpoint to 2D sheet coordinates
+                        # interside.direction is already a numpy array of Fraction
+                        # interside.origin_offset is a Fraction
+                        # Ensure calculations are float for vector math
+                        direction_f = np.array(interside.direction, dtype=float)
+                        origin_offset_f = float(interside.origin_offset)
 
-                    text_pos_2d = (float(mid_1d) + origin_offset_f) * direction_f
+                        text_pos_2d = (float(mid_1d) + origin_offset_f) * direction_f
 
-                    # Offset text slightly along the interside.normal
-                    normal_f = np.array(interside.normal, dtype=float)
-                    offset_distance = 1.5 * text_height
-                    text_pos_2d -= normal_f * offset_distance # Changed to subtract
+                        # Offset text slightly along the interside.normal
+                        normal_f = np.array(interside.normal, dtype=float)
+                        offset_distance = 1.5 * text_height
+                        text_pos_2d -= normal_f * offset_distance # Changed to subtract
 
-                    # Add global x_offset and y_offset (sheet packing)
-                    final_text_pos = (text_pos_2d[0] + x_offset, text_pos_2d[1] + y_offset)
+                        # Add global x_offset and y_offset (sheet packing)
+                        final_text_pos = (text_pos_2d[0] + x_offset, text_pos_2d[1] + y_offset)
 
-                    # Add MTEXT entity
-                    modelspace.add_mtext(
-                        interside.joint_marker_text,
-                        dxfattribs={
-                            'insert': final_text_pos,
-                            'char_height': text_height,
-                            'rotation': rotation_deg,
-                            'style': 'Standard', # Assuming 'Standard' style exists or is default
-                            'attachment_point': const.MTEXT_MIDDLE_CENTER,
-                        }
-                    )
+                        # Add MTEXT entity
+                        modelspace.add_mtext(
+                            interside.joint_marker_text,
+                            dxfattribs={
+                                'insert': final_text_pos,
+                                'char_height': text_height,
+                                'rotation': rotation_deg,
+                                'style': 'Standard', # Assuming 'Standard' style exists or is default
+                                'attachment_point': const.MTEXT_MIDDLE_CENTER,
+                            }
+                        )
 
     dwg.saveas(filename)

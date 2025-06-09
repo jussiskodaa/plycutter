@@ -77,6 +77,8 @@ def main(arguments=sys.argv[1:]):
         help="Turn on visual debugging (try in jupyterlab).",
     )
 
+    parser.add_argument("--markers", action="store_true", help="Enable generation of joint markers on 2D plans.")
+
     parser.add_argument(
         "--final_dilation",
         type=F,
@@ -145,8 +147,8 @@ def main(arguments=sys.argv[1:]):
     print(to_write_dilated)
 
     if args.format == "dxf":
-        writer.write_dxf(str(outfile), to_write_dilated, sp, result.sheetbuild)
+        writer.write_dxf(str(outfile), to_write_dilated, sp, result.sheetbuild, generate_markers=args.markers)
     elif args.format == "svg":
-        writer.write_svg(str(outfile), to_write_dilated, sp, result.sheetbuild)
+        writer.write_svg(str(outfile), to_write_dilated, sp, result.sheetbuild, generate_markers=args.markers)
 
     logger.info("Done!")
