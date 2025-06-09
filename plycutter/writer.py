@@ -87,12 +87,12 @@ def write_svg(filename, geom2ds, sheetplex, sheetbuild, text_height_svg=5):
                    not sheetbuild.interside_chosen[interside.id].is_empty():
 
                     chosen_joint_geom_1d = sheetbuild.interside_chosen[interside.id]
-                    bounds_1d = chosen_joint_geom_1d.bounds()
 
-                    if bounds_1d[0] is None or bounds_1d[1] is None: # Empty geom
+                    if not chosen_joint_geom_1d.intervals: # Check if intervals list is empty
                         continue
-
-                    mid_1d = (float(bounds_1d[0]) + float(bounds_1d[1])) / 2.0
+                    min_val = chosen_joint_geom_1d.intervals[0][0]
+                    max_val = chosen_joint_geom_1d.intervals[-1][1]
+                    mid_1d = (float(min_val) + float(max_val)) / 2.0
 
                     direction_f = np.array(interside.direction, dtype=float)
                     origin_offset_f = float(interside.origin_offset)
@@ -180,11 +180,11 @@ def write_dxf(filename, geom2ds, sheetplex, sheetbuild, text_height=0.5):
                     rotation_deg = np.degrees(rotation_rad)
 
                     # Midpoint of the 1D joint geometry
-                    # Using bounds which gives (min_val, max_val)
-                    bounds_1d = chosen_joint_geom_1d.bounds()
-                    if bounds_1d[0] is None or bounds_1d[1] is None : # Empty geom
+                    if not chosen_joint_geom_1d.intervals: # Check if intervals list is empty
                         continue
-                    mid_1d = (bounds_1d[0] + bounds_1d[1]) / 2.0
+                    min_val = chosen_joint_geom_1d.intervals[0][0]
+                    max_val = chosen_joint_geom_1d.intervals[-1][1]
+                    mid_1d = (float(min_val) + float(max_val)) / 2.0
 
                     # Convert 1D midpoint to 2D sheet coordinates
                     # interside.direction is already a numpy array of Fraction
