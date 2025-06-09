@@ -186,6 +186,7 @@ def robust_isfinite(v):
 class InterSide(pyr.PRecord, Autocompletable):
     """A particular sheet's view of an intersection.
     """
+    joint_marker_text = pyr.field(type=(str, type(None)), initial=None)
     id = pyr.field(type=tuple)
     """The identifier of the InterSide.
     """

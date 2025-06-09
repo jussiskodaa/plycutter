@@ -342,13 +342,16 @@ def find_all_facets(mesh):
 
 def create_intersections(sp):
     sheets = list(sp.sheets.values())
+    intersection_marker_count = 0
     for i, sheet0 in enumerate(sheets):
         for sheet1 in sheets[i + 1 :]:
-            sp = create_intersection(sp, (sheet0, sheet1))
+            intersection_marker_count += 1
+            marker_string = f"J{intersection_marker_count}"
+            sp = create_intersection(sp, (sheet0, sheet1), marker_string)
     return sp
 
 
-def create_intersection(sp, sheets):
+def create_intersection(sp, sheets, marker_string):
     id = intersection_id(sheets)
 
     sheet1, sheet2 = sheets
@@ -385,7 +388,7 @@ def create_intersection(sp, sheets):
     inter = Intersection(id=id, direction=inter_dir, origins=corner_origs,)
 
     inter_sides = [
-        create_inter_side(sp, inter, sheet, idx)
+        create_inter_side(sp, inter, sheet, idx, marker_string)
         for (idx, sheet) in enumerate(sheets)
     ]
 
@@ -400,7 +403,7 @@ def intersection_id(sheets):
     return ",".join(list(sorted([sheet.id for sheet in sheets])))
 
 
-def create_inter_side(sp, inter, sheet, idx):
+def create_inter_side(sp, inter, sheet, idx, marker_string):
     id = (inter.id, sheet.id)
 
     direction = sheet.project_point4(list(inter.direction) + [0.0]).astype(
@@ -426,4 +429,5 @@ def create_inter_side(sp, inter, sheet, idx):
         origin_offset=direction.dot(sheet_inter_origs[0]),
         min_normal_offset=np.min(normal_offsets),
         max_normal_offset=np.max(normal_offsets),
+        joint_marker_text=marker_string,
     )

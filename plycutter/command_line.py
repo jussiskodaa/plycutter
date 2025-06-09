@@ -145,8 +145,8 @@ def main(arguments=sys.argv[1:]):
     print(to_write_dilated)
 
     if args.format == "dxf":
-        writer.write_dxf(str(outfile), to_write_dilated)
+        writer.write_dxf(str(outfile), to_write_dilated, sp, result.sheetbuild)
     elif args.format == "svg":
-        writer.write_svg(str(outfile), to_write_dilated)
+        writer.write_svg(str(outfile), to_write_dilated, sp, result.sheetbuild)
 
     logger.info("Done!")
