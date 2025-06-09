@@ -176,7 +176,7 @@ def write_dxf(filename, geom2ds, sheetplex, sheetbuild, text_height=0.5):
 
                     # Calculate text position and rotation
                     # Joint runs along interside.direction. Text parallel to this.
-                    rotation_rad = np.arctan2(interside.direction[1], interside.direction[0])
+                    rotation_rad = np.arctan2(float(interside.direction[1]), float(interside.direction[0]))
                     rotation_deg = np.degrees(rotation_rad)
 
                     # Midpoint of the 1D joint geometry
