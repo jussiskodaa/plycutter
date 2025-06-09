@@ -27,7 +27,7 @@ from .geometry.aabb import AABB
 logger = logging.getLogger(__name__)
 
 
-def write_svg(filename, geom2ds, sheetplex, sheetbuild, text_height_svg=5):
+def write_svg(filename, geom2ds, sheetplex, sheetbuild, text_height_svg=50):
     file = open(filename, "w")
     file.write('<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
     file.write('<svg version = "1.1" xmlns="http://www.w3.org/2000/svg">\n')
@@ -101,7 +101,7 @@ def write_svg(filename, geom2ds, sheetplex, sheetbuild, text_height_svg=5):
                     # Position calculation in sheet coordinates
                     text_pos_2d_sheet = (mid_1d + origin_offset_f) * direction_f
                     # Offset along normal - using a fixed offset of 1.0 sheet units
-                    text_pos_2d_sheet += normal_f * 1.0
+                    text_pos_2d_sheet -= normal_f * 1.0 # Changed to subtract
 
                     # Apply global SVG offsets
                     text_x_svg = float(text_pos_2d_sheet[0]) + x_offset
@@ -123,7 +123,7 @@ def write_svg(filename, geom2ds, sheetplex, sheetbuild, text_height_svg=5):
     file.close()
 
 
-def write_dxf(filename, geom2ds, sheetplex, sheetbuild, text_height=0.5):
+def write_dxf(filename, geom2ds, sheetplex, sheetbuild, text_height=5.0):
     dwg = ezdxf.new("AC1015")
     modelspace = dwg.modelspace()
 
@@ -198,7 +198,7 @@ def write_dxf(filename, geom2ds, sheetplex, sheetbuild, text_height=0.5):
                     # Offset text slightly along the interside.normal
                     normal_f = np.array(interside.normal, dtype=float)
                     offset_distance = 1.5 * text_height
-                    text_pos_2d += normal_f * offset_distance
+                    text_pos_2d -= normal_f * offset_distance # Changed to subtract
 
                     # Add global x_offset and y_offset (sheet packing)
                     final_text_pos = (text_pos_2d[0] + x_offset, text_pos_2d[1] + y_offset)
